@@ -1,9 +1,0 @@
-GET http://localhost:3001/api/tags-orm
-
-###
-
-GET http://localhost:3001/api/tags-orm/neuf
-
-###
-
-DELETE http://localhost:3001/api/tags-orm/1

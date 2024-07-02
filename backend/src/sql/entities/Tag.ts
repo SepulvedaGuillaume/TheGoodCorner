@@ -7,12 +7,16 @@ import {
   ManyToMany,
 } from "typeorm";
 import Ad from "./Ad";
+import { Field, ID, Int, ObjectType } from "type-graphql";
 
+@ObjectType()
 @Entity()
 class Tag extends BaseEntity {
+  @Field(type => ID)
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Field()
   @Column({
     length: 100,
   })
@@ -21,6 +25,7 @@ class Tag extends BaseEntity {
   })
   name: string;
 
+  @Field(type => [Ad])
   @ManyToMany(() => Ad, (ad) => ad.tags, { onDelete: "CASCADE" })
   ads: Ad[];
 }

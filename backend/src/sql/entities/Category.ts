@@ -1,12 +1,16 @@
 import { Length } from "class-validator";
 import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany } from "typeorm";
 import Ad from "./Ad";
+import { Field, ID, ObjectType } from "type-graphql";
 
+@ObjectType()
 @Entity()
 class Category extends BaseEntity {
+  @Field(type => ID)
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Field()
   @Column({
     length: 100,
   })
@@ -15,6 +19,7 @@ class Category extends BaseEntity {
   })
   name: string;
 
+  @Field(type => [Ad])
   @OneToMany(() => Ad, (ad) => ad.category)
   ads: Ad[];
 }

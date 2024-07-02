@@ -1,25 +1,16 @@
-import express from "express";
-import router from "./routes/index";
 import db from "./sql/configSql";
 import fs from "fs";
 import path from "path";
-import "reflect-metadata";
 import dataSource from "./sql/dataSource";
-import cors from "cors";
-
-const port = process.env.PORT || 3001;
-
-const app = express();
-
-app.use(cors());
-app.use(express.json());
+import "reflect-metadata";
+import startApolloServer from "./startApollo";
 
 const queries = fs.readFileSync(
   path.join(__dirname, "./sql/queries.sql"),
   "utf8"
 );
 
-db.exec(queries, (err) => {
+db.exec(queries, (err: Error) => {
   if (err) {
     console.error("Error executing the SQL script:", err.message);
   } else {
@@ -36,14 +27,4 @@ dataSource
     console.error("Error connecting to the database", error);
   });
 
-// Log all requests
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
-  next();
-});
-
-app.use("/api", router);
-
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+startApolloServer();
