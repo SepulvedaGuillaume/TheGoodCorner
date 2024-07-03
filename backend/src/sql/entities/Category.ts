@@ -6,7 +6,7 @@ import { Field, ID, ObjectType } from "type-graphql";
 @ObjectType()
 @Entity()
 class Category extends BaseEntity {
-  @Field(type => ID)
+  @Field((type) => ID)
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -19,7 +19,7 @@ class Category extends BaseEntity {
   })
   name: string;
 
-  @Field(type => [Ad])
+  @Field((type) => [Ad])
   @OneToMany(() => Ad, (ad) => ad.category)
   ads: Ad[];
 }

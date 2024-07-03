@@ -17,7 +17,7 @@ import { Field, ID, ObjectType } from "type-graphql";
 @Entity()
 class Ad extends BaseEntity {
   @PrimaryGeneratedColumn()
-  @Field(type => ID)
+  @Field((type) => ID)
   id: number;
 
   @Field()
@@ -67,27 +67,26 @@ class Ad extends BaseEntity {
   })
   location: string;
 
-  @Field(type => Date)
+  @Field((type) => Date, { nullable: true })
   @Column("datetime")
-  createdAt: Date;
+  createdAt?: Date;
 
   // @Field(type => Int)
   // @Column()
   // categoryId: number;
 
-  @Field(type => Category)
+  @Field((type) => Category)
   @ManyToOne(() => Category, (category) => category.ads, { eager: true })
   category: Category;
 
-  @Field(type => [Tag])
+  @Field((type) => [Tag])
   @JoinTable()
-  @ManyToMany(() => Tag, (tag) => tag.ads, { onDelete: "CASCADE", eager: true})
-
+  @ManyToMany(() => Tag, (tag) => tag.ads, { onDelete: "CASCADE", eager: true })
   @JoinTable()
   tags?: Tag[];
 
-  @RelationId('tags')
-  tagIds?: number[]
+  @RelationId("tags")
+  tagIds?: number[];
 }
 
 export default Ad;

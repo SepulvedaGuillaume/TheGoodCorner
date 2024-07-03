@@ -12,7 +12,7 @@ import { Field, ID, Int, ObjectType } from "type-graphql";
 @ObjectType()
 @Entity()
 class Tag extends BaseEntity {
-  @Field(type => ID)
+  @Field((type) => ID)
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -25,7 +25,7 @@ class Tag extends BaseEntity {
   })
   name: string;
 
-  @Field(type => [Ad])
+  @Field((type) => [Ad])
   @ManyToMany(() => Ad, (ad) => ad.tags, { onDelete: "CASCADE" })
   ads: Ad[];
 }
