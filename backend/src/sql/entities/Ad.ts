@@ -71,10 +71,6 @@ class Ad extends BaseEntity {
   @Column("datetime")
   createdAt?: Date;
 
-  // @Field(type => Int)
-  // @Column()
-  // categoryId: number;
-
   @Field((type) => Category)
   @ManyToOne(() => Category, (category) => category.ads, { eager: true })
   category: Category;
@@ -82,7 +78,6 @@ class Ad extends BaseEntity {
   @Field((type) => [Tag])
   @JoinTable()
   @ManyToMany(() => Tag, (tag) => tag.ads, { onDelete: "CASCADE", eager: true })
-  @JoinTable()
   tags?: Tag[];
 
   @RelationId("tags")

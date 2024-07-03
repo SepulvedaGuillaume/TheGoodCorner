@@ -1,11 +1,12 @@
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import { buildSchema } from "type-graphql";
-import { AdResolver } from "./resolvers";
+import { AdQueries } from "./resolvers/AdQueries";
+import { AdMutations } from "./resolvers/AdMutations";
 
 export default async function startApolloServer() {
   const schema = await buildSchema({
-    resolvers: [AdResolver]
+    resolvers: [AdQueries, AdMutations]
   });
 
   const server = new ApolloServer({ schema });
