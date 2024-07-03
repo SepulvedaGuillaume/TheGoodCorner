@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import AdCard from "./AdCard";
 import styles from "@/styles/RecentAds.module.sass";
-import adService from "@/services/api/adService";
 import Loader from "./Loader";
 import { CategoryProps } from "./Category";
 import { TagProps } from "@/services/api/tagService";
+import { useQuery } from "@apollo/client";
+import { GET_ALL_ADS_QUERY } from "@/graphql/adsQuery";
 
 export interface Ad {
   id: number;
@@ -21,21 +22,19 @@ export interface Ad {
 
 export default function RecentAds() {
   const [ads, setAds] = useState<Ad[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { loading, error, data } = useQuery(GET_ALL_ADS_QUERY);
 
   const fetchAds = async () => {
     try {
-      const ads = await adService.getAds();
+      const ads = data?.getAllAds;
       const sortedAds = ads
-        ? (ads.sort((a, b) => (a.title > b.title ? 1 : -1)) as Ad[])
+        ? (ads.sort((a: { title: number }, b: { title: number }) =>
+            a.title > b.title ? 1 : -1
+          ) as Ad[])
         : [];
       setAds(sortedAds);
     } catch (error) {
       console.error("Failed to fetch ads:", error);
-    } finally {
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 100);
     }
   };
 
@@ -49,17 +48,20 @@ export default function RecentAds() {
   return (
     <div>
       <h2>Annonces récentes</h2>
-      {isLoading ? (
+      {loading ? (
         <Loader />
       ) : (
         <section className={styles["recent-ads"]}>
-          {ads && ads.length > 0 && !isLoading ? ads.map((ad) => (
-            <AdCard key={ad.id} updateAds={handleUpdateAds} {...ad} />
-          )) : (
+          {ads && ads.length > 0 && !loading ? (
+            ads.map((ad) => (
+              <AdCard key={ad.id} updateAds={handleUpdateAds} {...ad} />
+            ))
+          ) : (
             <p>Aucune annonce trouvée</p>
           )}
         </section>
       )}
+      {error && <p>Une erreur est survenue</p>}
     </div>
   );
 }
