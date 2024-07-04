@@ -8,3 +8,26 @@ export const GET_ALL_CATEGORIES_QUERY = gql`
     }
   }
 `;
+
+export const GET_CATEGORY_AND_ADS_QUERY = gql`
+  query GetCategoryById($getCategoryByIdId: String!) {
+    getCategoryById(id: $getCategoryByIdId) {
+      id
+      name
+      ads {
+        id
+        location
+        owner
+        picture
+        price
+        tags {
+          id
+          name
+        }
+        title
+        createdAt
+        description
+      }
+    }
+  }
+`;

@@ -1,7 +1,7 @@
 import { Resolver, Query, FieldResolver, Root, Arg } from "type-graphql";
 import Ad from "../sql/entities/Ad";
 import Tag from "../sql/entities/Tag";
-import { In } from "typeorm";
+import { In, Like } from "typeorm";
 import DataLoader from "dataloader";
 
 const tagsDataLoader = new DataLoader((ids) => {
@@ -29,10 +29,22 @@ export class AdQueries {
 
   @Query(() => Ad)
   async getAdById(@Arg("id") id: string): Promise<Ad> {
-    console.log("getAd from graphql");
+    console.log("getAdById from graphql");
     const ad: Ad = await Ad.findOne({
       where: { id },
     });
     return ad;
+  }
+
+  @Query(() => [Ad])
+  async searchAds(@Arg("searchTerm") searchTerm: string): Promise<Ad[]> {
+    console.log(`searchAds from graphql with searchTerm: ${searchTerm}`);
+    const ads: Ad[] = await Ad.find({
+      where: [
+        { title: Like(`%${searchTerm}%`) },
+        { category: { name: Like(`%${searchTerm}%`) } },
+      ],
+    });
+    return ads;
   }
 }

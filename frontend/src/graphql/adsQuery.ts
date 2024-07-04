@@ -41,3 +41,24 @@ export const GET_AD_QUERY = gql`
     }
   }
 `;
+
+export const SEARCH_ADS_QUERY = gql`
+  query SearchAds($searchTerm: String!) {
+    searchAds(searchTerm: $searchTerm) {
+      id
+      title
+      description
+      owner
+      price
+      picture
+      location
+      createdAt
+      category {
+        name
+      }
+      tags {
+        name
+      }
+    }
+  }
+`;

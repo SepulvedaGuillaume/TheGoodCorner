@@ -77,13 +77,13 @@ class UpdateAdInput implements Partial<Ad> {
 @InputType({ description: "New category data" })
 class CategoryInput implements Partial<Category> {
   @Field((type) => ID)
-  id: number;
+  id: string;
 }
 
 @InputType({ description: "New tag data" })
 class TagInput implements Partial<Tag> {
   @Field((type) => ID)
-  id: number;
+  id: string;
 }
 
 @Resolver(Ad)

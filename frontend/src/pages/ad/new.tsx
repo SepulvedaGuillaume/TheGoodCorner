@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import styles from "@/styles/NewAd.module.sass";
-import adService from "@/services/api/adService";
-import categoryService from "@/services/api/categoryService";
-import tagService from "@/services/api/tagService";
 import Loader from "@/components/Loader";
 import { SingleValue, MultiValue } from "react-select";
 import type { CategoryProps, TagProps } from "@/types";
@@ -12,6 +9,11 @@ import TextAreaField from "@/components/TextAreaField";
 import SelectField from "@/components/SelectField";
 import { useCategory } from "@/contexts/categoryContext";
 import type { FormData, OptionType } from "@/types";
+import { useQuery, useMutation } from "@apollo/client";
+import { CREATE_AD_MUTATION } from "@/graphql/adsMutation";
+import { GET_ALL_CATEGORIES_QUERY } from "@/graphql/categoriesQuery";
+import { GET_ALL_TAGS_QUERY } from "@/graphql/tagsQuery";
+import { GET_ALL_ADS_QUERY } from "@/graphql/adsQuery";
 
 export default function NewAd() {
   const {
@@ -33,10 +35,17 @@ export default function NewAd() {
   const [selectedTags, setSelectedTags] = useState<MultiValue<OptionType>>([]);
   const { updateCategories } = useCategory();
 
+  const { data: categoriesQuery } = useQuery(GET_ALL_CATEGORIES_QUERY);
+  const { data: tagsQuery } = useQuery(GET_ALL_TAGS_QUERY);
+  const [createAd, { data }] = useMutation(CREATE_AD_MUTATION, {
+    refetchQueries: [{ query: GET_ALL_ADS_QUERY }],
+  });
+
   useEffect(() => {
     const fetchCategoriesAndTags = async () => {
       try {
-        const categories = await categoryService.getCategories();
+        const categories = await categoriesQuery?.getAllCategories;
+
         setCategories(
           categories?.map((category: CategoryProps) => ({
             value: category.name,
@@ -45,7 +54,7 @@ export default function NewAd() {
           })) ?? []
         );
 
-        const tags: TagProps[] | undefined = await tagService.getTags();
+        const tags: TagProps[] | undefined = await tagsQuery?.getAllTags;
         setTags(
           tags?.map((tag: TagProps) => ({
             value: tag.name,
@@ -54,6 +63,9 @@ export default function NewAd() {
         );
       } catch (error) {
         console.error("Failed to fetch categories and tags:", error);
+        setError("Failed to fetch categories and tags");
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchCategoriesAndTags();
@@ -62,24 +74,27 @@ export default function NewAd() {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
-      const response = await adService.postAd(data);
-  
-      if (response) {
-        const { status } = response;
-  
-        if (status === 201) {
-          setSuccess(true);
-          setError("");
-          reset();
-          setSelectedCategory(null);
-          setSelectedTags([]);
-          updateCategories();
-        } else {
-          setError("Failed to post ad. Please try again.");
-        }
-      } else {
-        setError("Failed to post ad. Please try again.");
-      }
+      await createAd({
+        variables: {
+          data: {
+            title: data.title,
+            description: data.description,
+            owner: data.owner,
+            price: data.price,
+            picture: data.picture,
+            location: data.location,
+            category: { name: data.category },
+            tags: data?.tags?.map((tag: string) => ({ name: tag })),
+          },
+        },
+      });
+
+      setSuccess(true);
+      setError("");
+      reset();
+      setSelectedCategory(null);
+      setSelectedTags([]);
+      updateCategories();
     } catch (error) {
       console.error("Failed to post ad:", error);
       setError((error as Error).message);

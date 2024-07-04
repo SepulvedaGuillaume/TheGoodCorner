@@ -8,7 +8,7 @@ import type { Ad } from "@/types";
 
 export default function RecentAds() {
   const [ads, setAds] = useState<Ad[]>([]);
-  const { loading, error, data, refetch } = useQuery(GET_ALL_ADS_QUERY);
+  const { loading, error, data } = useQuery(GET_ALL_ADS_QUERY);
   const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {

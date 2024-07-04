@@ -264,7 +264,7 @@ export default function AdDetails({
             </div>
           )}
           <div className={styles["ad-details-category"]}>
-            Catégorie: {category.name}
+            Catégorie: {category?.name}
           </div>
           <div className={styles["ad-details-owner"]}>Vendeur: {owner}</div>
           <div className={styles["ad-details-location"]}>

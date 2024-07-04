@@ -17,6 +17,11 @@ export interface Ad {
   tags?: TagProps[];
 }
 
+export interface Category {
+  id: number;
+  name: string;
+}
+
 export interface AdCardProps {
   id: number;
   title: string;

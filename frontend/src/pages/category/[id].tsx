@@ -2,48 +2,36 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import GoBackButton from "@/components/GoBackButton";
 import styles from "@/styles/AdDetailsPage.module.sass";
-import categoryService from "@/services/api/categoryService";
 import Loader from "@/components/Loader";
-import type { CategoryProps, AdDetailsPage } from "@/types";
 import AdDetails from "@/components/AdDetails";
+import { useQuery } from "@apollo/client";
+import { GET_CATEGORY_AND_ADS_QUERY } from "@/graphql/categoriesQuery";
+import type { Category, AdDetailsProps } from "@/types";
 
 export default function AdDetailsPage() {
   const router = useRouter();
   const { id } = router.query;
 
-  const [ads, setAds] = useState<AdDetailsPage[]>([]);
-  const [category, setCategory] = useState<CategoryProps | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { data, loading, error, refetch } = useQuery(GET_CATEGORY_AND_ADS_QUERY, {
+    variables: { getCategoryByIdId: id }
+  });
 
-  const fetchData = async (idInt: number) => {
-    setIsLoading(true);
-    try {
-      const [categoryResult, adsResult] = await Promise.all([
-        categoryService.getCategory(idInt),
-        categoryService.getAdsByCategory(idInt)
-      ]);
-      setCategory(categoryResult as CategoryProps);
-      const sortedAds = adsResult?.sort((a, b) => a.price - b.price);
-      setAds(sortedAds as AdDetailsPage[]);
-    } catch (error) {
-      console.error("Failed to fetch data:", error);
-    } finally {
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 100);
-    }
-  };
+  const [category, setCategory] = useState<Category | null>(null);
+  const [ads, setAds] = useState<AdDetailsProps[]>([]);
 
   useEffect(() => {
-    if (id) {
-      const idInt = parseInt(id as string);
-      fetchData(idInt);
+    if (data) {
+      setCategory(data.getCategoryById);
+      setAds(data.getCategoryById.ads);
     }
-  }, [id]);
+  }, [data]);
 
   const handleUpdateAds = () => {
-    fetchData(parseInt(id as string));
-  }
+    refetch();
+  };
+
+  if (loading) return <Loader />;
+  if (error) return <p className={styles["ad-details-page-error"]}>Failed to load data.</p>;
 
   return (
     <div className={styles["ad-details-page-container"]}>
@@ -51,16 +39,16 @@ export default function AdDetailsPage() {
         Catégorie: {category?.name}
       </h1>
       <GoBackButton />
-      {isLoading ? (
-        <Loader />
-      ) : (
-        ads.map((ad) => <AdDetails key={ad.id} updateAds={handleUpdateAds} {...ad} />)
-      )}
-      {ads.length === 0 && !isLoading && (
+      {ads.length === 0 && !loading && (
         <p className={styles["ad-details-page-no-items"]}>
           Aucun article trouvé pour cette catégorie.
         </p>
       )}
+      <section className={styles["ads-search-section"]}>
+        {ads.map((ad: AdDetailsProps) => (
+          <AdDetails key={ad.id} {...ad} updateAds={handleUpdateAds} />
+        ))}
+      </section>
     </div>
   );
 }
