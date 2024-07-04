@@ -1,11 +1,7 @@
 import Head from "next/head";
 import Header from "@/components/Header";
-import { ReactNode } from "react";
 import styles from "@/styles/Layout.module.sass";
-
-export interface LayoutProps {
-  children: ReactNode;
-}
+import type { LayoutProps } from "@/types";
 
 export default function Layout({ children }: LayoutProps) {
   return (

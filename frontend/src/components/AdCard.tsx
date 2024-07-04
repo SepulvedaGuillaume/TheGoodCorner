@@ -2,23 +2,8 @@ import Link from "next/link";
 import styles from "@/styles/AdCard.module.sass";
 import Button from "./Button";
 import { useBasket } from "@/contexts/basketContext";
-import { CategoryProps } from "./Category";
-import { TagProps } from "@/services/api/tagService";
+import type { AdCardProps } from "@/types";
 import adService from "@/services/api/adService";
-
-export interface AdCardProps {
-  id: number;
-  title: string;
-  description?: string;
-  owner: string;
-  price: number;
-  picture?: string;
-  location: string;
-  createdAt: string;
-  category: CategoryProps;
-  tags?: TagProps[];
-  updateAds: () => void;
-}
 
 export default function AdCard({
   id,

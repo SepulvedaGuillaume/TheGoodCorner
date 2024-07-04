@@ -1,10 +1,6 @@
 import styles from "@/styles/Category.module.sass";
 import Link from "next/link";
-
-export interface CategoryProps {
-  id: number;
-  name: string;
-}
+import type { CategoryProps } from "@/types";
 
 export default function Category({id, name}: CategoryProps) {
   const nameToCapitalize = name.charAt(0).toUpperCase() + name.slice(1);

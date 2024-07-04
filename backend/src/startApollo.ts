@@ -4,10 +4,11 @@ import { buildSchema } from "type-graphql";
 import { AdQueries } from "./resolvers/AdQueries";
 import { AdMutations } from "./resolvers/AdMutations";
 import { CategoryQueries } from "./resolvers/CategoryQueries";
+import { TagsQueries } from "./resolvers/TagsQueries";
 
 export default async function startApolloServer() {
   const schema = await buildSchema({
-    resolvers: [AdQueries, AdMutations, CategoryQueries]
+    resolvers: [AdQueries, AdMutations, CategoryQueries, TagsQueries]
   });
 
   const server = new ApolloServer({ schema });

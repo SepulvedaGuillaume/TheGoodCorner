@@ -1,14 +1,5 @@
 import styles from "@/styles/NewAd.module.sass";
-
-interface InputFieldProps {
-    label: string;
-    name: string;
-    register: any;
-    required: boolean
-    error: any;
-    type?: string;
-    min?: number;
-}
+import type { InputFieldProps } from "@/types";
 
 export default function InputField({ label, name, register, required, error, type="text", min }: InputFieldProps) {
   return (

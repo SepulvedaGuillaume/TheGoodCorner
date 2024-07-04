@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import adService from "@/services/api/adService";
-import { Ad } from "@/components/RecentAds";
+import type { Ad } from "@/types";
 import Loader from "@/components/Loader";
 import styles from "@/styles/SearchPage.module.sass";
 import AdCard from "@/components/AdCard";
@@ -46,17 +46,16 @@ export default function SearchPage() {
     }
   };
 
-
   useEffect(() => {
     setIsLoading(true);
     setError(null);
 
-    if(!search) {
+    if (!search) {
       setSearchQuery("Toutes les annonces");
       fetchAllAds();
       return;
     }
-    
+
     if (typeof search === "string" && isNaN(Number(search))) {
       setSearchQuery(search);
       fetchSearchResults();

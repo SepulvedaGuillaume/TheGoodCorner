@@ -4,32 +4,18 @@ import styles2 from "@/styles/NewAd.module.sass";
 import Button from "./Button";
 import { useBasket } from "@/contexts/basketContext";
 import adService from "@/services/api/adService";
-import { TagProps } from "@/services/api/tagService";
-import categoryService from "@/services/api/categoryService";
-import tagService from "@/services/api/tagService";
-import { FormData, OptionType } from "@/pages/ad/new";
+import { useQuery } from "@apollo/client";
+import { GET_ALL_CATEGORIES_QUERY } from "@/graphql/categoriesQuery";
+import { GET_ALL_TAGS_QUERY } from "@/graphql/tagsQuery";
+import type { FormData, OptionType } from "@/types";
 import Loader from "@/components/Loader";
 import { SingleValue, MultiValue } from "react-select";
-import { CategoryProps } from "@/components/Category";
+import type { AdDetailsProps, CategoryProps, TagProps } from "@/types";
 import { useForm, SubmitHandler } from "react-hook-form";
 import InputField from "@/components/InputField";
 import TextAreaField from "@/components/TextAreaField";
 import SelectField from "@/components/SelectField";
 import { useCategory } from "@/contexts/categoryContext";
-
-interface AdDetailsProps {
-  id: number;
-  title: string;
-  description: string;
-  owner: string;
-  location: string;
-  price: number;
-  picture: string;
-  createdAt: string;
-  category: { name: string };
-  tags: { name: string }[];
-  updateAds: (bool: boolean) => void;
-}
 
 export default function AdDetails({
   id,
@@ -62,14 +48,20 @@ export default function AdDetails({
   const [selectedCategory, setSelectedCategory] =
     useState<SingleValue<OptionType>>(null);
   const [selectedTags, setSelectedTags] = useState<MultiValue<OptionType>>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>("");
+
+  const { data: categoriesQuery } = useQuery(GET_ALL_CATEGORIES_QUERY);
+  const { data: tagsQuery } = useQuery(GET_ALL_TAGS_QUERY);
 
   const isAdded = basket.some((item) => item.id === id);
 
   useEffect(() => {
     const fetchCategoriesAndTags = async () => {
       try {
-        const categories = await categoryService.getCategories();
+        const categories = await categoriesQuery?.getAllCategories;
+        console.log(categories);
+
         setCategoriesAll(
           categories?.map((category: CategoryProps) => ({
             value: category.name,
@@ -78,7 +70,7 @@ export default function AdDetails({
           })) ?? []
         );
 
-        const tags: TagProps[] | undefined = await tagService.getTags();
+        const tags: TagProps[] | undefined = await tagsQuery?.getAllTags;
         setTagsAll(
           tags?.map((tag: TagProps) => ({
             value: tag.name,
@@ -87,6 +79,9 @@ export default function AdDetails({
         );
       } catch (error) {
         console.error("Failed to fetch categories and tags:", error);
+        setError("Failed to fetch categories and tags");
+      } finally {
+        setLoading(false);
       }
     };
     fetchCategoriesAndTags();
@@ -102,6 +97,7 @@ export default function AdDetails({
       updateAds(true);
     } catch (error) {
       console.error("Failed to delete ad:", error);
+      setError("Failed to delete ad");
     }
   };
 
@@ -113,6 +109,7 @@ export default function AdDetails({
       updateCategories();
     } catch (error) {
       console.error("Failed to update ad:", error);
+      setError("Failed to update ad");
     }
   };
 
@@ -131,7 +128,7 @@ export default function AdDetails({
 
   return (
     <div className={styles["ad-details-container"]}>
-      {isLoading && <Loader />}
+      {loading && <Loader />}
       <span
         className={styles["ad-details-delete-button"]}
         onClick={handleDeleteAd}

@@ -7,8 +7,7 @@ import { CategoryProvider } from "@/contexts/categoryContext";
 import {
   ApolloClient,
   InMemoryCache,
-  ApolloProvider,
-  gql,
+  ApolloProvider
 } from "@apollo/client";
 
 const GRAPHQL_URL = process.env.NEXT_PUBLIC_GRAPHQL_URL;

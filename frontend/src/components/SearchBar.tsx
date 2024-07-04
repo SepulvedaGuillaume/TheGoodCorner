@@ -1,4 +1,3 @@
-// SearchBar.tsx
 import { ChangeEvent, useState } from "react";
 import styles from "@/styles/Header.module.sass";
 import { useRouter } from "next/router";

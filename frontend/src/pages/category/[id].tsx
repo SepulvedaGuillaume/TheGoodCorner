@@ -4,27 +4,14 @@ import GoBackButton from "@/components/GoBackButton";
 import styles from "@/styles/AdDetailsPage.module.sass";
 import categoryService from "@/services/api/categoryService";
 import Loader from "@/components/Loader";
-import { CategoryProps } from "@/components/Category";
+import type { CategoryProps, AdDetailsPage } from "@/types";
 import AdDetails from "@/components/AdDetails";
-
-export interface AdDetailsProps {
-  id: number;
-  title: string;
-  description: string;
-  owner: string;
-  location: string;
-  price: number;
-  picture: string;
-  createdAt: string;
-  category: CategoryProps;
-  tags: { name: string }[];
-}
 
 export default function AdDetailsPage() {
   const router = useRouter();
   const { id } = router.query;
 
-  const [ads, setAds] = useState<AdDetailsProps[]>([]);
+  const [ads, setAds] = useState<AdDetailsPage[]>([]);
   const [category, setCategory] = useState<CategoryProps | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -37,7 +24,7 @@ export default function AdDetailsPage() {
       ]);
       setCategory(categoryResult as CategoryProps);
       const sortedAds = adsResult?.sort((a, b) => a.price - b.price);
-      setAds(sortedAds as AdDetailsProps[]);
+      setAds(sortedAds as AdDetailsPage[]);
     } catch (error) {
       console.error("Failed to fetch data:", error);
     } finally {

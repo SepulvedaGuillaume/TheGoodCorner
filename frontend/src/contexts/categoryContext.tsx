@@ -1,21 +1,11 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  ReactNode,
-} from "react";
-import categoryService from "@/services/api/categoryService";
-import { CategoryProps } from "@/components/Category";
-
-interface CategoryContextProps {
-  categories: CategoryProps[];
-  updateCategories: () => void;
-}
-
-interface CategoryProviderProps {
-  children: ReactNode;
-}
+import { createContext, useContext, useEffect, useState } from "react";
+import { useQuery } from "@apollo/client";
+import { GET_ALL_CATEGORIES_QUERY } from "@/graphql/categoriesQuery";
+import type {
+  CategoryProps,
+  CategoryContextProps,
+  CategoryProviderProps,
+} from "@/types";
 
 const CategoryContext = createContext<CategoryContextProps | undefined>(
   undefined
@@ -23,17 +13,25 @@ const CategoryContext = createContext<CategoryContextProps | undefined>(
 
 export const CategoryProvider = ({ children }: CategoryProviderProps) => {
   const [categories, setCategories] = useState<CategoryProps[]>([]);
-
-  const updateCategories = async () => {
-    const categories = await categoryService.getCategories();
-    const sortedCategories =
-      categories?.sort((a, b) => a.name.localeCompare(b.name)) ?? [];
-    setCategories(sortedCategories);
-  };
+  const { data, loading, error } = useQuery(GET_ALL_CATEGORIES_QUERY);
 
   useEffect(() => {
-    updateCategories();
-  }, []);
+    if (data && !loading && !error) {
+      const sortedCategories = [...data.getAllCategories].sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
+      setCategories(sortedCategories);
+    }
+  }, [data, loading, error]);
+
+  const updateCategories = () => {
+    if (data) {
+      const sortedCategories = [...data.getAllCategories].sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
+      setCategories(sortedCategories);
+    }
+  };
 
   return (
     <CategoryContext.Provider value={{ categories, updateCategories }}>

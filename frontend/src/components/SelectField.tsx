@@ -1,18 +1,7 @@
 import styles from "@/styles/NewAd.module.sass";
-import CreatableSelect from 'react-select/creatable';
+import CreatableSelect from "react-select/creatable";
 import { Controller } from "react-hook-form";
-
-interface SelectFieldProps {
-  label: string;
-  required: boolean;
-  options: any;
-  isMulti: boolean;
-  value: any;
-  onChange: any;
-  error: any;
-  control: any;
-  name: string;
-}
+import type { SelectFieldProps } from "@/types";
 
 export default function SelectField({
   label,
@@ -28,7 +17,8 @@ export default function SelectField({
   return (
     <>
       <label className={styles["new-ad-form-label"]}>
-        {label} {required && <span className={styles["new-ad-form-required"]}>*</span>}
+        {label}{" "}
+        {required && <span className={styles["new-ad-form-required"]}>*</span>}
       </label>
       <Controller
         control={control}

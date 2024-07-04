@@ -1,11 +1,6 @@
 import axios from "axios";
-import { AdCardProps } from "@/components/AdCard";
-import { FormData } from "@/pages/ad/new";
-
-interface PostAd {
-  data: AdCardProps;
-  status: number;
-}
+import type { FormData } from "@/types";
+import type { AdCardProps, PostAd } from "@/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -21,7 +16,9 @@ const adService = {
 
   getAd: async (id: number) => {
     try {
-      const response = await axios.get<AdCardProps>(`${BASE_URL}/ads-orm/${id}`);
+      const response = await axios.get<AdCardProps>(
+        `${BASE_URL}/ads-orm/${id}`
+      );
       return response.data;
     } catch (error) {
       console.error("Failed to fetch ad:", error);
@@ -39,7 +36,9 @@ const adService = {
 
   deleteAd: async (id: number) => {
     try {
-      const response = await axios.delete<AdCardProps[]>(`${BASE_URL}/ads-orm/${id}`);
+      const response = await axios.delete<AdCardProps[]>(
+        `${BASE_URL}/ads-orm/${id}`
+      );
       return response.data;
     } catch (error) {
       console.error("Failed to delete ad:", error);
@@ -48,7 +47,9 @@ const adService = {
 
   searchByTitleOrCategory: async (search: string) => {
     try {
-      const response = await axios.get<AdCardProps[]>(`${BASE_URL}/ads-orm/search/${search}`);
+      const response = await axios.get<AdCardProps[]>(
+        `${BASE_URL}/ads-orm/search/${search}`
+      );
       return response.data;
     } catch (error) {
       console.error("Failed to search ad:", error);
@@ -57,7 +58,10 @@ const adService = {
 
   updateAd: async (id: number, ad: FormData) => {
     try {
-      const response = await axios.put<AdCardProps>(`${BASE_URL}/ads-orm/${id}`, ad);
+      const response = await axios.put<AdCardProps>(
+        `${BASE_URL}/ads-orm/${id}`,
+        ad
+      );
       return response.data;
     } catch (error) {
       console.error("Failed to update ad:", error);

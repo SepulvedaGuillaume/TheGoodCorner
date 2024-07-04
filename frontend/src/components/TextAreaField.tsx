@@ -1,11 +1,5 @@
 import styles from "@/styles/NewAd.module.sass";
-
-interface TextAreaFieldProps {
-  label: string;
-  name: string;
-  register: any;
-  required: boolean;
-}
+import type { TextAreaFieldProps } from "@/types";
 
 export default function TextAreaField({
   label,

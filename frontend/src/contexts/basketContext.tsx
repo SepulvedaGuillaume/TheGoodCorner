@@ -1,29 +1,20 @@
 import { createContext, useState, ReactNode, useContext } from "react";
+import type {
+  BasketItem,
+  BasketContextProps,
+  BasketProviderProps,
+} from "@/types";
 
-interface BasketItem {
-  id: number;
-  price: number;
-}
-
-interface BasketContextProps {
-  basket: BasketItem[];
-  toggleItemBasket: (item: BasketItem) => void;
-  totalBasketPrice: number;
-}
-interface BasketProviderProps {
-  children: ReactNode;
-}
-
-const BasketContext = createContext<BasketContextProps | undefined>(
-  undefined
-);
+const BasketContext = createContext<BasketContextProps | undefined>(undefined);
 
 export const BasketProvider = ({ children }: BasketProviderProps) => {
   const [basket, setBasket] = useState<BasketItem[]>([]);
 
   const toggleItemBasket = (item: BasketItem) => {
     // Vérifier si l'article est déjà dans le panier
-    const itemIndex = basket.findIndex((basketItem) => basketItem.id === item.id);
+    const itemIndex = basket.findIndex(
+      (basketItem) => basketItem.id === item.id
+    );
 
     if (itemIndex !== -1) {
       // Si l'article est déjà dans le panier, le supprimer
@@ -39,7 +30,9 @@ export const BasketProvider = ({ children }: BasketProviderProps) => {
   const totalBasketPrice = basket.reduce((acc, item) => acc + item.price, 0);
 
   return (
-    <BasketContext.Provider value={{ basket, toggleItemBasket, totalBasketPrice }}>
+    <BasketContext.Provider
+      value={{ basket, toggleItemBasket, totalBasketPrice }}
+    >
       {children}
     </BasketContext.Provider>
   );

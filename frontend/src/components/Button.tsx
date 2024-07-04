@@ -1,12 +1,11 @@
 import styles from "@/styles/Button.module.sass";
+import type { ButtonProps } from "@/types";
 
-interface ButtonProps {
-  label: string;
-  onClickButton: () => void;
-  stylesName: string;
-}
-
-export default function Button({ label, onClickButton, stylesName }: ButtonProps) {
+export default function Button({
+  label,
+  onClickButton,
+  stylesName,
+}: ButtonProps) {
   return (
     <button className={styles[stylesName]} onClick={onClickButton}>
       {label}

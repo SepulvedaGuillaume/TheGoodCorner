@@ -3,30 +3,15 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import styles from "@/styles/NewAd.module.sass";
 import adService from "@/services/api/adService";
 import categoryService from "@/services/api/categoryService";
-import tagService, { TagProps } from "@/services/api/tagService";
+import tagService from "@/services/api/tagService";
 import Loader from "@/components/Loader";
 import { SingleValue, MultiValue } from "react-select";
-import { CategoryProps } from "@/components/Category";
+import type { CategoryProps, TagProps } from "@/types";
 import InputField from "@/components/InputField";
 import TextAreaField from "@/components/TextAreaField";
 import SelectField from "@/components/SelectField";
 import { useCategory } from "@/contexts/categoryContext";
-
-export interface FormData {
-  title: string;
-  description?: string;
-  owner: string;
-  price: number;
-  picture?: string;
-  location: string;
-  category: string;
-  tags?: string[];
-}
-
-export interface OptionType {
-  value: string;
-  label: string;
-}
+import type { FormData, OptionType } from "@/types";
 
 export default function NewAd() {
   const {

@@ -1,11 +1,7 @@
 import axios from "axios";
+import type { TagProps } from "@/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-
-export interface TagProps {
-  id: number;
-  name: string;
-}
 
 const tagService = {
   getTags: async () => {
