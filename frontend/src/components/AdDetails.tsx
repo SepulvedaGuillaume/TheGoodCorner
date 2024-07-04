@@ -17,6 +17,14 @@ import TextAreaField from "@/components/TextAreaField";
 import SelectField from "@/components/SelectField";
 import { useCategory } from "@/contexts/categoryContext";
 import { GET_ALL_ADS_QUERY } from "@/graphql/adsQuery";
+import {
+  GetAllCategoriesQuery,
+  GetAllCategoriesQueryVariables,
+  GetAllTagsQuery,
+  GetAllTagsQueryVariables,
+  DeleteAdMutation,
+  DeleteAdMutationVariables,
+} from "@/__generated__/graphql";
 
 export default function AdDetails({
   id,
@@ -31,7 +39,7 @@ export default function AdDetails({
   tags,
   updateAds,
 }: AdDetailsProps) {
-  const createdAtTransform = new Date(createdAt).toLocaleDateString("fr-FR");
+  const createdAtTransform = new Date(createdAt || "").toLocaleDateString("fr-FR");
 
   const {
     register,
@@ -52,12 +60,14 @@ export default function AdDetails({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
-  const { data: categoriesQuery } = useQuery(GET_ALL_CATEGORIES_QUERY);
-  const { data: tagsQuery } = useQuery(GET_ALL_TAGS_QUERY);
-  const [deleteAd, { data: categoryDeletMutation }] =
-    useMutation(DELETE_AD_MUTATION, {
-      refetchQueries: [{ query: GET_ALL_ADS_QUERY }],
-    });
+  const { data: categoriesQuery } = useQuery<GetAllCategoriesQuery, GetAllCategoriesQueryVariables>(GET_ALL_CATEGORIES_QUERY);
+  const { data: tagsQuery } = useQuery<GetAllTagsQuery, GetAllTagsQueryVariables>(GET_ALL_TAGS_QUERY);
+  const [deleteAd, { data: categoryDeletMutation }] = useMutation<
+    DeleteAdMutation,
+    DeleteAdMutationVariables
+  >(DELETE_AD_MUTATION, {
+    refetchQueries: [{ query: GET_ALL_ADS_QUERY }],
+  });
   const [updateAd, { data: categoryUpdateMutation }] =
     useMutation(UPDATE_AD_MUTATION);
 
@@ -66,32 +76,36 @@ export default function AdDetails({
   useEffect(() => {
     const fetchCategoriesAndTags = async () => {
       try {
-        const categories = await categoriesQuery?.getAllCategories;
+        const categoriesResponse = await categoriesQuery?.getAllCategories;
+        const tagsResponse = await tagsQuery?.getAllTags;
 
         setCategoriesAll(
-          categories?.map((category: CategoryProps) => ({
+          categoriesResponse?.map((category: CategoryProps) => ({
+            id: category.id,
             value: category.name,
             label:
               category.name.charAt(0).toUpperCase() + category.name.slice(1),
           })) ?? []
         );
 
-        const tags: TagProps[] | undefined = await tagsQuery?.getAllTags;
         setTagsAll(
-          tags?.map((tag: TagProps) => ({
+          tagsResponse?.map((tag: TagProps) => ({
+            id: tag.id,
             value: tag.name,
             label: tag.name.charAt(0).toUpperCase() + tag.name.slice(1),
           })) ?? []
         );
+
+        setLoading(false);
       } catch (error) {
         console.error("Failed to fetch categories and tags:", error);
         setError("Failed to fetch categories and tags");
-      } finally {
         setLoading(false);
       }
     };
+
     fetchCategoriesAndTags();
-  }, []);
+  }, [categoriesQuery, tagsQuery]);
 
   const handleToggleBasket = () => {
     toggleItemBasket({ id, price });
@@ -99,7 +113,7 @@ export default function AdDetails({
 
   const handleDeleteAd = async () => {
     try {
-      await deleteAd({ variables: { deleteAdId: id } });
+      await deleteAd({ variables: { deleteAdId: id.toString() } });
       updateAds(true);
     } catch (error) {
       console.error("Failed to delete ad:", error);
@@ -109,6 +123,13 @@ export default function AdDetails({
 
   const handleEditAd: SubmitHandler<FormData> = async (data) => {
     try {
+      const categoryId = categoriesAll.find(
+        (cat) => cat.value === data.category
+      )?.id;
+      const tagIds = selectedTags.map(
+        (tag) => tagsAll.find((t) => t.value === tag.value)?.id
+      );
+
       await updateAd({
         variables: {
           data: {
@@ -118,8 +139,10 @@ export default function AdDetails({
             price: data.price,
             picture: data.picture,
             location: data.location,
-            category: data.category,
-            tags: data.tags,
+            category: {
+              id: categoryId,
+            },
+            tags: tagIds.map((tagId) => ({ id: tagId })),
           },
           updateAdId: id,
         },
@@ -132,23 +155,31 @@ export default function AdDetails({
       setError("Failed to update ad");
     }
   };
-
   const handleEditButtonClick = () => {
     setIsEditing(true);
     setValue("title", title);
-    setValue("description", description);
+    setValue("description", description || "");
     setValue("owner", owner);
     setValue("price", price);
-    setValue("picture", picture);
+    setValue("picture", picture || "");
     setValue("location", location);
     setValue("category", category.name);
-    setSelectedCategory({ value: category.name, label: category.name });
-    setSelectedTags(tags?.map((tag) => ({ value: tag.name, label: tag.name })));
+    setSelectedCategory({
+      id: category.id || "",
+      value: category.name,
+      label: category.name,
+    });
+    setSelectedTags(
+      tags?.map((tag) => ({ id: tag.id || "", value: tag.name, label: tag.name }))
+    );
   };
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <div className={styles["ad-details-container"]}>
-      {loading && <Loader />}
       <span
         className={styles["ad-details-delete-button"]}
         onClick={handleDeleteAd}

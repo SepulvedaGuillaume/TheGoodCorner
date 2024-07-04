@@ -122,38 +122,47 @@ export class AdMutations {
     @Arg("data") updatedAd: UpdateAdInput
   ): Promise<Ad> {
     console.log("updateAd from graphql");
-
+  
     const ad = await Ad.findOne({ where: { id } });
     if (!ad) {
       throw new Error(`Ad with id ${id} not found`);
     }
-
+  
     if (updatedAd.category) {
-      const category = await Category.findOne({
-        where: { id: updatedAd.category.id },
+      let category = await Category.findOne({
+        where: { name: updatedAd.category.name },
       });
       if (!category) {
-        throw new Error(`Category with id ${updatedAd.category.id} not found`);
+        category = Category.create({ name: updatedAd.category.name });
+        await category.save();
       }
+      updatedAd.category = category;
     }
-
+  
     if (updatedAd.tags) {
-      const tags = await Tag.find({
-        where: { id: In(updatedAd.tags.map((tag) => tag.id)) },
-      });
-      if (tags.length !== updatedAd.tags.length) {
-        throw new Error("One or more tags not found");
-      }
+      const tagNames = updatedAd.tags.map(tag => tag.name);
+      let tags = await Tag.find({ where: { name: In(tagNames) } });
+  
+      // Create any missing tags
+      const existingTagNames = tags.map(tag => tag.name);
+      const newTagNames = tagNames.filter(name => !existingTagNames.includes(name));
+      const newTags = newTagNames.map(name => Tag.create({ name }));
+  
+      await Tag.save(newTags);
+      tags = tags.concat(newTags);
+      
+      updatedAd.tags = tags;
     }
-
+  
     const adUpdated = Ad.create({
       ...ad,
       ...updatedAd,
     });
-
+  
     await adUpdated.save();
     return adUpdated;
   }
+  
 
   @Mutation(() => String)
   async deleteAd(@Arg("id") id: string): Promise<string> {

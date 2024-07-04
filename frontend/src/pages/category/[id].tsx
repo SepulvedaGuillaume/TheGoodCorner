@@ -7,13 +7,20 @@ import AdDetails from "@/components/AdDetails";
 import { useQuery } from "@apollo/client";
 import { GET_CATEGORY_AND_ADS_QUERY } from "@/graphql/categoriesQuery";
 import type { Category, AdDetailsProps } from "@/types";
+import {
+  GetCategoryByIdQuery,
+  GetCategoryByIdQueryVariables,
+} from "@/__generated__/graphql";
 
 export default function AdDetailsPage() {
   const router = useRouter();
   const { id } = router.query;
 
-  const { data, loading, error, refetch } = useQuery(GET_CATEGORY_AND_ADS_QUERY, {
-    variables: { getCategoryByIdId: id }
+  const { data, loading, error, refetch } = useQuery<
+    GetCategoryByIdQuery,
+    GetCategoryByIdQueryVariables
+  >(GET_CATEGORY_AND_ADS_QUERY, {
+    variables: { getCategoryByIdId: id as string },
   });
 
   const [category, setCategory] = useState<Category | null>(null);
@@ -22,7 +29,7 @@ export default function AdDetailsPage() {
   useEffect(() => {
     if (data) {
       setCategory(data.getCategoryById);
-      setAds(data.getCategoryById.ads);
+      setAds(data.getCategoryById.ads as AdDetailsProps[]);
     }
   }, [data]);
 
@@ -31,7 +38,10 @@ export default function AdDetailsPage() {
   };
 
   if (loading) return <Loader />;
-  if (error) return <p className={styles["ad-details-page-error"]}>Failed to load data.</p>;
+  if (error)
+    return (
+      <p className={styles["ad-details-page-error"]}>Failed to load data.</p>
+    );
 
   return (
     <div className={styles["ad-details-page-container"]}>
@@ -39,7 +49,7 @@ export default function AdDetailsPage() {
         Catégorie: {category?.name}
       </h1>
       <GoBackButton />
-      {ads.length === 0 && !loading && (
+      {ads.length === 0 && (
         <p className={styles["ad-details-page-no-items"]}>
           Aucun article trouvé pour cette catégorie.
         </p>

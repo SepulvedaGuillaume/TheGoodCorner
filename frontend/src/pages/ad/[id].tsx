@@ -1,19 +1,23 @@
-import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import AdDetails from "@/components/AdDetails";
-import type { AdDetailsProps } from "@/types";
 import GoBackButton from "@/components/GoBackButton";
 import styles from "@/styles/AdDetailsPage.module.sass";
 import { useQuery } from "@apollo/client";
 import { GET_AD_QUERY } from "@/graphql/adsQuery";
 import Loader from "@/components/Loader";
+import {
+  GetAdByIdQuery,
+  GetAdByIdQueryVariables,
+} from "@/__generated__/graphql";
 
 export default function AdDetailsPage() {
+  console.log("AdDetailsPage");
+  
   const router = useRouter();
   const { id } = router.query;
 
-  const { data, loading, error } = useQuery(GET_AD_QUERY, {
-    variables: { getAdByIdId: id },
+  const { data, loading, error } = useQuery<GetAdByIdQuery, GetAdByIdQueryVariables>(GET_AD_QUERY, {
+    variables: { getAdByIdId: id as string},
   });
 
   const handleUpdateAds = (bool: boolean) => {

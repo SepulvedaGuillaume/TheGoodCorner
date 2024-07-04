@@ -24,6 +24,10 @@ export const GET_CATEGORY_AND_ADS_QUERY = gql`
           id
           name
         }
+        category {
+          id
+          name
+        }
         title
         createdAt
         description

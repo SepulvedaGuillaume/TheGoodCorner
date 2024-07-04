@@ -6,6 +6,10 @@ import type {
   CategoryContextProps,
   CategoryProviderProps,
 } from "@/types";
+import {
+  GetAllCategoriesQuery,
+  GetAllCategoriesQueryVariables,
+} from "@/__generated__/graphql";
 
 const CategoryContext = createContext<CategoryContextProps | undefined>(
   undefined
@@ -13,7 +17,10 @@ const CategoryContext = createContext<CategoryContextProps | undefined>(
 
 export const CategoryProvider = ({ children }: CategoryProviderProps) => {
   const [categories, setCategories] = useState<CategoryProps[]>([]);
-  const { data, loading, error } = useQuery(GET_ALL_CATEGORIES_QUERY);
+  const { data, loading, error } = useQuery<
+    GetAllCategoriesQuery,
+    GetAllCategoriesQueryVariables
+  >(GET_ALL_CATEGORIES_QUERY);
 
   useEffect(() => {
     if (data && !loading && !error) {

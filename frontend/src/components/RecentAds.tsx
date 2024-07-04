@@ -4,16 +4,16 @@ import styles from "@/styles/RecentAds.module.sass";
 import Loader from "./Loader";
 import { useQuery } from "@apollo/client";
 import { GET_ALL_ADS_QUERY } from "@/graphql/adsQuery";
-import type { Ad } from "@/types";
+import { GetAllAdsQuery, GetAllAdsQueryVariables } from "@/__generated__/graphql";
 
 export default function RecentAds() {
-  const [ads, setAds] = useState<Ad[]>([]);
-  const { loading, error, data } = useQuery(GET_ALL_ADS_QUERY);
+  const { loading, error, data } = useQuery<GetAllAdsQuery, GetAllAdsQueryVariables>(GET_ALL_ADS_QUERY);
+  const [ads, setAds] = useState<GetAllAdsQuery["getAllAds"]>([]);
   const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
     if (data && !loading && !error) {
-      const sortedAds = [...data.getAllAds].sort((a: Ad, b: Ad) =>
+      const sortedAds = [...data.getAllAds].sort((a, b) =>
         a.title.localeCompare(b.title)
       );
       setAds(sortedAds);
@@ -22,7 +22,7 @@ export default function RecentAds() {
 
   const handleUpdateAds = () => {
     if (data) {
-      const sortedAds = [...data.getAllAds].sort((a: Ad, b: Ad) =>
+      const sortedAds = [...data.getAllAds].sort((a, b) =>
         a.title.localeCompare(b.title)
       );
       setAds(sortedAds);

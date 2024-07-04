@@ -5,63 +5,69 @@ export interface LayoutProps {
 }
 
 export interface Ad {
-  id: number;
+  id: string;
   title: string;
-  description?: string;
+  description?: string | null;
   owner: string;
   price: number;
-  picture?: string;
+  picture?: string | null;
   location: string;
-  createdAt: string;
-  category: CategoryProps;
-  tags?: TagProps[];
+  createdAt?: any;
+  category: Category;
+  tags: Tag[];
 }
 
 export interface Category {
-  id: number;
+  id: string;
+  name: string;
+}
+
+export interface Tag {
+  id: string;
   name: string;
 }
 
 export interface AdCardProps {
-  id: number;
+  id: string;
   title: string;
-  description?: string;
-  owner: string;
   price: number;
-  picture?: string;
-  location: string;
-  createdAt: string;
-  category: CategoryProps;
-  tags?: TagProps[];
+  picture?: string | null;
+  description?: string | null;
   updateAds: () => void;
 }
 
 export interface CategoryProps {
-  id: number;
+  id: string;
   name: string;
 }
 
 export interface TagProps {
-  id: number;
+  id: string;
   name: string;
 }
 
 export interface AdDetailsProps {
-  id: number;
+  id: string;
   title: string;
-  description: string;
+  description?: string | null;
   owner: string;
   location: string;
   price: number;
-  picture: string;
-  createdAt: string;
-  category: { name: string };
-  tags: { name: string }[];
+  picture?: string | null;
+  createdAt?: string | null;
+  category: {
+    id?: string;
+    name: string;
+  };
+  tags: {
+    id?: string;
+    name: string;
+  }[];
   updateAds: (bool: boolean) => void;
 }
 
 export interface AdDetailsPage {
-  id: number;
+  id: string;
   title: string;
   description: string;
   owner: string;
@@ -83,7 +89,7 @@ export interface CategoryProviderProps {
 }
 
 export interface BasketItem {
-  id: number;
+  id: string;
   price: number;
 }
 
@@ -149,6 +155,7 @@ export interface FormData {
 }
 
 export interface OptionType {
+  id: string;
   value: string;
   label: string;
 }

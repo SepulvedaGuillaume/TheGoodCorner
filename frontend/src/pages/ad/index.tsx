@@ -5,21 +5,27 @@ import Loader from "@/components/Loader";
 import styles from "@/styles/SearchPage.module.sass";
 import AdCard from "@/components/AdCard";
 import { SEARCH_ADS_QUERY } from "@/graphql/adsQuery";
-import type { Ad } from "@/types";
+import {
+  SearchAdsQuery,
+  SearchAdsQueryVariables,
+} from "@/__generated__/graphql";
 
 export default function SearchPage() {
   const router = useRouter();
   const { search } = router.query;
   const [searchQuery, setSearchQuery] = useState<string | null>(null);
-  const { data, loading, error, refetch } = useQuery(SEARCH_ADS_QUERY, {
-    variables: { searchTerm: search || "" },
+  const { data, loading, error, refetch } = useQuery<
+    SearchAdsQuery,
+    SearchAdsQueryVariables
+  >(SEARCH_ADS_QUERY, {
+    variables: { searchTerm: search as string },
   });
 
-  const [ads, setAds] = useState<Ad[]>([]);
+  const [ads, setAds] = useState<SearchAdsQuery["searchAds"]>([]);
 
   useEffect(() => {
     if (data && !loading && !error) {
-      const sortedAds = [...data.searchAds].sort((a: Ad, b: Ad) =>
+      const sortedAds = [...data.searchAds].sort((a, b) =>
         a.title.localeCompare(b.title)
       );
       setAds(sortedAds);
@@ -33,7 +39,7 @@ export default function SearchPage() {
   const handleUpdateAds = () => {
     refetch();
     if (data) {
-      const sortedAds = [...data.getAllAds].sort((a: Ad, b: Ad) =>
+      const sortedAds = [...data.searchAds].sort((a, b) =>
         a.title.localeCompare(b.title)
       );
       setAds(sortedAds);
@@ -41,7 +47,8 @@ export default function SearchPage() {
   };
 
   if (loading) return <Loader />;
-  if (error) return <p className={styles["ads-search-error"]}>{error.message}</p>;
+  if (error)
+    return <p className={styles["ads-search-error"]}>{error.message}</p>;
 
   return (
     <div>
@@ -54,7 +61,7 @@ export default function SearchPage() {
         <p className={styles["ads-search-no-ad"]}>Aucune annonce trouvée</p>
       )}
       <section className={styles["ads-search-section"]}>
-        {ads.map((ad: Ad) => (
+        {ads.map((ad) => (
           <AdCard key={ad.id} updateAds={handleUpdateAds} {...ad} />
         ))}
       </section>

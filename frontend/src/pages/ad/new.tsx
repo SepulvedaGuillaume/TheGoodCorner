@@ -14,11 +14,19 @@ import { CREATE_AD_MUTATION } from "@/graphql/adsMutation";
 import { GET_ALL_CATEGORIES_QUERY } from "@/graphql/categoriesQuery";
 import { GET_ALL_TAGS_QUERY } from "@/graphql/tagsQuery";
 import { GET_ALL_ADS_QUERY } from "@/graphql/adsQuery";
+import {
+  GetAllCategoriesQuery,
+  GetAllCategoriesQueryVariables,
+  GetAllTagsQuery,
+  GetAllTagsQueryVariables,
+  CreateAdMutation,
+  CreateAdMutationVariables,
+} from "@/__generated__/graphql";
 
 export default function NewAd() {
   const {
     register,
-    control, 
+    control,
     handleSubmit,
     formState: { errors },
     setValue,
@@ -27,16 +35,20 @@ export default function NewAd() {
 
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true); 
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [categories, setCategories] = useState<OptionType[]>([]);
   const [tags, setTags] = useState<OptionType[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<SingleValue<OptionType>>(null);
+  const [selectedCategory, setSelectedCategory] =
+    useState<SingleValue<OptionType>>(null);
   const [selectedTags, setSelectedTags] = useState<MultiValue<OptionType>>([]);
   const { updateCategories } = useCategory();
 
-  const { data: categoriesQuery } = useQuery(GET_ALL_CATEGORIES_QUERY);
-  const { data: tagsQuery } = useQuery(GET_ALL_TAGS_QUERY);
-  const [createAd, { data }] = useMutation(CREATE_AD_MUTATION, {
+  const { data: categoriesQuery } = useQuery<GetAllCategoriesQuery, GetAllCategoriesQueryVariables>(GET_ALL_CATEGORIES_QUERY);
+  const { data: tagsQuery } = useQuery<GetAllTagsQuery, GetAllTagsQueryVariables>(GET_ALL_TAGS_QUERY);
+  const [createAd, { data }] = useMutation<
+    CreateAdMutation,
+    CreateAdMutationVariables
+  >(CREATE_AD_MUTATION, {
     refetchQueries: [{ query: GET_ALL_ADS_QUERY }],
   });
 
@@ -46,15 +58,20 @@ export default function NewAd() {
         const categoriesData = await categoriesQuery?.getAllCategories;
         const tagsData = await tagsQuery?.getAllTags;
 
-        const transformedCategories = categoriesData?.map((category: CategoryProps) => ({
-          value: category.name,
-          label: category.name.charAt(0).toUpperCase() + category.name.slice(1),
-        })) ?? [];
+        const transformedCategories =
+          categoriesData?.map((category: CategoryProps) => ({
+            id: category.id,
+            value: category.name,
+            label:
+              category.name.charAt(0).toUpperCase() + category.name.slice(1),
+          })) ?? [];
 
-        const transformedTags = tagsData?.map((tag: TagProps) => ({
-          value: tag.name,
-          label: tag.name.charAt(0).toUpperCase() + tag.name.slice(1),
-        })) ?? [];
+        const transformedTags =
+          tagsData?.map((tag: TagProps) => ({
+            id: tag.id,
+            value: tag.name,
+            label: tag.name.charAt(0).toUpperCase() + tag.name.slice(1),
+          })) ?? [];
 
         setCategories(transformedCategories);
         setTags(transformedTags);
@@ -62,15 +79,15 @@ export default function NewAd() {
         console.error("Failed to fetch categories and tags:", error);
         setError("Failed to fetch categories and tags");
       } finally {
-        setIsLoading(false); 
+        setIsLoading(false);
       }
     };
 
     fetchCategoriesAndTags();
-  }, [categoriesQuery, tagsQuery]); 
+  }, [categoriesQuery, tagsQuery]);
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    setIsLoading(true); 
+    setIsLoading(true);
     try {
       await createAd({
         variables: {
@@ -81,23 +98,23 @@ export default function NewAd() {
             price: data.price,
             picture: data.picture,
             location: data.location,
-            category: { name: data.category },
-            tags: data?.tags?.map((tag: string) => ({ name: tag })),
+            category: { id: data.category },
+            tags: data?.tags?.map((tag: string) => ({ id: tag })) ?? [],
           },
         },
       });
 
       setSuccess(true);
       setError("");
-      reset(); 
+      reset();
       setSelectedCategory(null);
       setSelectedTags([]);
-      updateCategories(); 
+      updateCategories();
     } catch (error) {
       console.error("Failed to post ad:", error);
       setError((error as Error).message);
     } finally {
-      setIsLoading(false); 
+      setIsLoading(false);
     }
   };
 
