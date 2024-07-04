@@ -3,10 +3,10 @@ import styles from "@/styles/AdDetails.module.sass";
 import styles2 from "@/styles/NewAd.module.sass";
 import Button from "./Button";
 import { useBasket } from "@/contexts/basketContext";
-import adService from "@/services/api/adService";
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import { GET_ALL_CATEGORIES_QUERY } from "@/graphql/categoriesQuery";
 import { GET_ALL_TAGS_QUERY } from "@/graphql/tagsQuery";
+import { UPDATE_AD_MUTATION, DELETE_AD_MUTATION } from "@/graphql/adsMutation";
 import type { FormData, OptionType } from "@/types";
 import Loader from "@/components/Loader";
 import { SingleValue, MultiValue } from "react-select";
@@ -16,6 +16,7 @@ import InputField from "@/components/InputField";
 import TextAreaField from "@/components/TextAreaField";
 import SelectField from "@/components/SelectField";
 import { useCategory } from "@/contexts/categoryContext";
+import { GET_ALL_ADS_QUERY } from "@/graphql/adsQuery";
 
 export default function AdDetails({
   id,
@@ -53,6 +54,12 @@ export default function AdDetails({
 
   const { data: categoriesQuery } = useQuery(GET_ALL_CATEGORIES_QUERY);
   const { data: tagsQuery } = useQuery(GET_ALL_TAGS_QUERY);
+  const [deleteAd, { data: categoryDeletMutation }] =
+    useMutation(DELETE_AD_MUTATION, {
+      refetchQueries: [{ query: GET_ALL_ADS_QUERY }],
+    });
+  const [updateAd, { data: categoryUpdateMutation }] =
+    useMutation(UPDATE_AD_MUTATION);
 
   const isAdded = basket.some((item) => item.id === id);
 
@@ -60,7 +67,6 @@ export default function AdDetails({
     const fetchCategoriesAndTags = async () => {
       try {
         const categories = await categoriesQuery?.getAllCategories;
-        console.log(categories);
 
         setCategoriesAll(
           categories?.map((category: CategoryProps) => ({
@@ -93,7 +99,7 @@ export default function AdDetails({
 
   const handleDeleteAd = async () => {
     try {
-      await adService.deleteAd(id);
+      await deleteAd({ variables: { deleteAdId: id } });
       updateAds(true);
     } catch (error) {
       console.error("Failed to delete ad:", error);
@@ -103,7 +109,21 @@ export default function AdDetails({
 
   const handleEditAd: SubmitHandler<FormData> = async (data) => {
     try {
-      await adService.updateAd(id, data);
+      await updateAd({
+        variables: {
+          data: {
+            title: data.title,
+            description: data.description,
+            owner: data.owner,
+            price: data.price,
+            picture: data.picture,
+            location: data.location,
+            category: data.category,
+            tags: data.tags,
+          },
+          updateAdId: id,
+        },
+      });
       setIsEditing(false);
       updateAds(false);
       updateCategories();

@@ -28,7 +28,7 @@ export class AdQueries {
   }
 
   @Query(() => Ad)
-  async getAdById(@Arg("id") id: number): Promise<Ad> {
+  async getAdById(@Arg("id") id: string): Promise<Ad> {
     console.log("getAd from graphql");
     const ad: Ad = await Ad.findOne({
       where: { id },

@@ -8,7 +8,8 @@ import type { Ad } from "@/types";
 
 export default function RecentAds() {
   const [ads, setAds] = useState<Ad[]>([]);
-  const { loading, error, data } = useQuery(GET_ALL_ADS_QUERY);
+  const { loading, error, data, refetch } = useQuery(GET_ALL_ADS_QUERY);
+  const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
     if (data && !loading && !error) {
@@ -20,18 +21,27 @@ export default function RecentAds() {
   }, [data, loading, error]);
 
   const handleUpdateAds = () => {
-    if (data) {
-      const sortedAds = [...data.getAllAds].sort((a: Ad, b: Ad) =>
-        a.title.localeCompare(b.title)
-      );
-      setAds(sortedAds);
+    setLoading(true);
+    try {
+      refetch();
+
+      if (data) {
+        const sortedAds = [...data.getAllAds].sort((a: Ad, b: Ad) =>
+          a.title.localeCompare(b.title)
+        );
+        setAds(sortedAds);
+      }
+    } catch (error) {
+      console.error("Failed to update ads:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div>
       <h2>Annonces récentes</h2>
-      {loading ? (
+      {loading || isLoading ? (
         <Loader />
       ) : (
         <section className={styles["recent-ads"]}>

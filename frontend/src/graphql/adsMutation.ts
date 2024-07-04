@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
-export const GET_ALL_ADS_QUERY = gql`
-  query GetAllAds {
-    getAllAds {
+export const CREATE_AD_MUTATION = gql`
+  mutation Mutation($data: AdInput!) {
+    createAd(data: $data) {
       id
       title
       description
@@ -21,9 +21,9 @@ export const GET_ALL_ADS_QUERY = gql`
   }
 `;
 
-export const GET_AD_QUERY = gql`
-  query GetAdById($getAdByIdId: String!) {
-    getAdById(id: $getAdByIdId) {
+export const UPDATE_AD_MUTATION = gql`
+  mutation UpdateAd($data: UpdateAdInput!, $updateAdId: String!) {
+    updateAd(data: $data, id: $updateAdId) {
       id
       title
       description
@@ -39,5 +39,11 @@ export const GET_AD_QUERY = gql`
         name
       }
     }
+  }
+`;
+
+export const DELETE_AD_MUTATION = gql`
+  mutation Mutation($deleteAdId: String!) {
+    deleteAd(id: $deleteAdId)
   }
 `;

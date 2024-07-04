@@ -3,7 +3,9 @@ import styles from "@/styles/AdCard.module.sass";
 import Button from "./Button";
 import { useBasket } from "@/contexts/basketContext";
 import type { AdCardProps } from "@/types";
-import adService from "@/services/api/adService";
+import { useMutation } from "@apollo/client";
+import { DELETE_AD_MUTATION } from "@/graphql/adsMutation";
+import Loader from "@/components/Loader";
 
 export default function AdCard({
   id,
@@ -14,6 +16,8 @@ export default function AdCard({
 }: AdCardProps) {
   const { basket, toggleItemBasket } = useBasket();
 
+  const [deleteAd, { data, loading, error }] = useMutation(DELETE_AD_MUTATION);
+
   const isAdded = basket.some((item) => item.id === id);
 
   const handleToggleBasket = () => {
@@ -22,12 +26,15 @@ export default function AdCard({
 
   const handleDeleteAd = async () => {
     try {
-      await adService.deleteAd(id);
+      await deleteAd({ variables: { deleteAdId: id } });
       updateAds();
     } catch (error) {
       console.error("Failed to delete ad:", error);
     }
   };
+
+  if (loading) return <Loader />;
+  if (error) return `Submission error! ${error.message}`;
 
   return (
     <div className={styles["ad-card-container"]}>

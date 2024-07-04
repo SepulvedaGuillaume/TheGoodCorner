@@ -18,7 +18,7 @@ import { Field, ID, ObjectType } from "type-graphql";
 class Ad extends BaseEntity {
   @PrimaryGeneratedColumn()
   @Field((type) => ID)
-  id: number;
+  id: string;
 
   @Field()
   @Column({

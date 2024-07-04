@@ -14,7 +14,7 @@ import { DeepPartial, In } from "typeorm";
 @InputType({ description: "New ad data" })
 class AdInput implements Partial<Ad> {
   @Field((type) => ID, { defaultValue: Math.floor(Math.random() * 1000) })
-  id: number;
+  id: string;
 
   @Field()
   title: string;
@@ -118,7 +118,7 @@ export class AdMutations {
 
   @Mutation(() => Ad)
   async updateAd(
-    @Arg("id") id: number,
+    @Arg("id") id: string,
     @Arg("data") updatedAd: UpdateAdInput
   ): Promise<Ad> {
     console.log("updateAd from graphql");
@@ -156,7 +156,7 @@ export class AdMutations {
   }
 
   @Mutation(() => String)
-  async deleteAd(@Arg("id") id: number): Promise<string> {
+  async deleteAd(@Arg("id") id: string): Promise<string> {
     console.log("deleteAd from graphql");
 
     const ad = await Ad.findOne({ where: { id } });
