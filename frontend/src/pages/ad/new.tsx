@@ -18,7 +18,7 @@ import { GET_ALL_ADS_QUERY } from "@/graphql/adsQuery";
 export default function NewAd() {
   const {
     register,
-    control,
+    control, 
     handleSubmit,
     formState: { errors },
     setValue,
@@ -27,11 +27,10 @@ export default function NewAd() {
 
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true); 
   const [categories, setCategories] = useState<OptionType[]>([]);
   const [tags, setTags] = useState<OptionType[]>([]);
-  const [selectedCategory, setSelectedCategory] =
-    useState<SingleValue<OptionType>>(null);
+  const [selectedCategory, setSelectedCategory] = useState<SingleValue<OptionType>>(null);
   const [selectedTags, setSelectedTags] = useState<MultiValue<OptionType>>([]);
   const { updateCategories } = useCategory();
 
@@ -44,35 +43,34 @@ export default function NewAd() {
   useEffect(() => {
     const fetchCategoriesAndTags = async () => {
       try {
-        const categories = await categoriesQuery?.getAllCategories;
+        const categoriesData = await categoriesQuery?.getAllCategories;
+        const tagsData = await tagsQuery?.getAllTags;
 
-        setCategories(
-          categories?.map((category: CategoryProps) => ({
-            value: category.name,
-            label:
-              category.name.charAt(0).toUpperCase() + category.name.slice(1),
-          })) ?? []
-        );
+        const transformedCategories = categoriesData?.map((category: CategoryProps) => ({
+          value: category.name,
+          label: category.name.charAt(0).toUpperCase() + category.name.slice(1),
+        })) ?? [];
 
-        const tags: TagProps[] | undefined = await tagsQuery?.getAllTags;
-        setTags(
-          tags?.map((tag: TagProps) => ({
-            value: tag.name,
-            label: tag.name.charAt(0).toUpperCase() + tag.name.slice(1),
-          })) ?? []
-        );
+        const transformedTags = tagsData?.map((tag: TagProps) => ({
+          value: tag.name,
+          label: tag.name.charAt(0).toUpperCase() + tag.name.slice(1),
+        })) ?? [];
+
+        setCategories(transformedCategories);
+        setTags(transformedTags);
       } catch (error) {
         console.error("Failed to fetch categories and tags:", error);
         setError("Failed to fetch categories and tags");
       } finally {
-        setIsLoading(false);
+        setIsLoading(false); 
       }
     };
+
     fetchCategoriesAndTags();
-  }, []);
+  }, [categoriesQuery, tagsQuery]); 
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    setIsLoading(true);
+    setIsLoading(true); 
     try {
       await createAd({
         variables: {
@@ -91,19 +89,21 @@ export default function NewAd() {
 
       setSuccess(true);
       setError("");
-      reset();
+      reset(); 
       setSelectedCategory(null);
       setSelectedTags([]);
-      updateCategories();
+      updateCategories(); 
     } catch (error) {
       console.error("Failed to post ad:", error);
       setError((error as Error).message);
     } finally {
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 100);
+      setIsLoading(false); 
     }
   };
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   return (
     <div className={styles["new-ad-container"]}>
