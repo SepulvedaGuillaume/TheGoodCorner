@@ -5,6 +5,7 @@ import { useBasket } from "@/contexts/basketContext";
 import type { AdCardProps } from "@/types";
 import { useMutation } from "@apollo/client";
 import { DELETE_AD_MUTATION } from "@/graphql/adsMutation";
+import { GET_ALL_ADS_QUERY } from "@/graphql/adsQuery";
 import Loader from "@/components/Loader";
 
 export default function AdCard({
@@ -16,7 +17,9 @@ export default function AdCard({
 }: AdCardProps) {
   const { basket, toggleItemBasket } = useBasket();
 
-  const [deleteAd, { data, loading, error }] = useMutation(DELETE_AD_MUTATION);
+  const [deleteAd, { data, loading, error }] = useMutation(DELETE_AD_MUTATION, {
+    refetchQueries: [{ query: GET_ALL_ADS_QUERY }],
+  });
 
   const isAdded = basket.some((item) => item.id === id);
 

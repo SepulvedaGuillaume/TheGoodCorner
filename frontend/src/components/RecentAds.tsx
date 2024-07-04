@@ -21,20 +21,11 @@ export default function RecentAds() {
   }, [data, loading, error]);
 
   const handleUpdateAds = () => {
-    setLoading(true);
-    try {
-      refetch();
-
-      if (data) {
-        const sortedAds = [...data.getAllAds].sort((a: Ad, b: Ad) =>
-          a.title.localeCompare(b.title)
-        );
-        setAds(sortedAds);
-      }
-    } catch (error) {
-      console.error("Failed to update ads:", error);
-    } finally {
-      setLoading(false);
+    if (data) {
+      const sortedAds = [...data.getAllAds].sort((a: Ad, b: Ad) =>
+        a.title.localeCompare(b.title)
+      );
+      setAds(sortedAds);
     }
   };
 
