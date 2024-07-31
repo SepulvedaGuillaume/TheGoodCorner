@@ -1,4 +1,4 @@
-import db from "./sql/configSql";
+import client from "./sql/configSql";
 import fs from "fs";
 import path from "path";
 import dataSource from "./sql/dataSource";
@@ -10,21 +10,22 @@ const queries = fs.readFileSync(
   "utf8"
 );
 
-db.exec(queries, (err: Error) => {
+client.query(queries, (err) => {
   if (err) {
-    console.error("Error executing the SQL script:", err.message);
+    console.error("Erreur lors de l'execution du script SQL:", err.message);
   } else {
-    console.log("Database initialized successfully.");
+    console.log("Script SQL exécuté avec succès");
   }
+  client.end();
 });
 
 dataSource
   .initialize()
   .then(() => {
-    console.log("Connected to the database");
+    console.log("Datasource initialisée avec succès");
   })
   .catch((error) => {
-    console.error("Error connecting to the database", error);
+    console.error("Erreur lors de l'initalisation de la Datasource ", error);
   });
 
 startApolloServer();

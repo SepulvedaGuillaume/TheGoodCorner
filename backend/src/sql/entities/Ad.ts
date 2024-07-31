@@ -67,8 +67,8 @@ class Ad extends BaseEntity {
   })
   location: string;
 
-  @Field((type) => Date, { nullable: true })
-  @Column("datetime")
+  @Field((type) => Date)
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt?: Date;
 
   @Field((type) => Category)

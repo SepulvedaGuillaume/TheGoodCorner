@@ -1,13 +1,19 @@
-import sqlite3 from "sqlite3";
-import path from "path";
+import { Client } from 'pg';
 
-const dbPath = path.resolve(__dirname, "good_corner.sqlite");
-
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        return console.error(err.message);
-    }
-    console.log('Connected to the SQLite database.');
+const client = new Client({
+  user: 'postgres',
+  host: 'postgres', 
+  database: 'thegoodcorner',
+  password: 'root',
+  port: 5432,
 });
 
-export default db;
+client.connect(err => {
+  if (err) {
+    console.error('Erreur de connexion à la base de données', err.stack);
+  } else {
+    console.log('Connecté à la base de données');
+  }
+});
+
+export default client;

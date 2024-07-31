@@ -1,8 +1,18 @@
---Créer la table category
-DROP TABLE IF EXISTS category;
+-- Supprimer la table ad_tags_tag si elle existe
+DROP TABLE IF EXISTS ad_tags_tag;
 
+-- Supprimer la table ad si elle existe
+DROP TABLE IF EXISTS ad;
+
+-- Supprimer la table category si elle existe avec CASCADE
+DROP TABLE IF EXISTS category CASCADE;
+
+-- Supprimer la table tag si elle existe
+DROP TABLE IF EXISTS tag;
+
+-- Créer la table category
 CREATE TABLE category (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL
 );
 
@@ -19,12 +29,9 @@ INSERT INTO category (name) VALUES
 ('sport'),
 ('autre');
 
-
---Créer la table tag
-DROP TABLE IF EXISTS tag;
-
+-- Créer la table tag
 CREATE TABLE tag (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL
 );
 
@@ -34,21 +41,18 @@ INSERT INTO tag (name) VALUES
 ('bon état'),
 ('état correct');
 
--- Supprimer la table si elle existe
-DROP TABLE IF EXISTS ad;
-
--- Créer la table
+-- Créer la table ad
 CREATE TABLE ad (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
   description TEXT,
   owner VARCHAR(255) NOT NULL,  
   price INT NOT NULL,
   picture VARCHAR(255),
   location VARCHAR(255) NOT NULL,
-  createdAt DATETIME NOT NULL,
-  categoryId INTEGER NOT NULL,
-  FOREIGN KEY (categoryId) REFERENCES category(id)
+  createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  categoryId INT NOT NULL,
+  FOREIGN KEY (categoryId) REFERENCES category(id) ON DELETE CASCADE
 );
 
 -- Insérer 20 annonces dans ces 3 villes : Bordeaux, Paris, Lyon
@@ -74,18 +78,15 @@ INSERT INTO ad (title, description, owner, price, picture, location, createdAt, 
 ('Iphone', 'Téléphone en bon état', 'Jean', 300, 'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', 'Bordeaux', '2021-01-01 00:00:00', 2),
 ('Plusieurs cables de recharge Iphone', 'Chargeur en bon état', 'Marie', 10, NULL, 'Paris', '1965-01-01 00:00:00', 2);
 
-
--- Supprimer la table si elle existe
-DROP TABLE IF EXISTS ad_tags_tag;
-
--- Créer la table
+-- Créer la table ad_tags_tag
 CREATE TABLE ad_tags_tag (
-  adId INTEGER,
-  tagId INTEGER,
-  FOREIGN KEY (adId) REFERENCES ad(id),
-  FOREIGN KEY (tagId) REFERENCES tag(id)
+  adId INT NOT NULL,
+  tagId INT NOT NULL,
+  FOREIGN KEY (adId) REFERENCES ad(id) ON DELETE CASCADE,
+  FOREIGN KEY (tagId) REFERENCES tag(id) ON DELETE CASCADE
 );
 
+-- Insérer les relations ad - tag
 INSERT INTO ad_tags_tag (adId, tagId) VALUES
 (1, 1),
 (1, 2),
@@ -93,4 +94,4 @@ INSERT INTO ad_tags_tag (adId, tagId) VALUES
 (2, 2),
 (10, 3),
 (11, 2),
-(16, 1)
+(16, 1);
