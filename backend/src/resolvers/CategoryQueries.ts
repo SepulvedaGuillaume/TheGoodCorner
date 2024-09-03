@@ -1,6 +1,6 @@
 import { Resolver, Query, Arg, FieldResolver, Root } from "type-graphql";
-import Category from "../sql/entities/Category";
-import Ad from "../sql/entities/Ad";
+import {Category} from "../sql/entities/Category";
+import {Ad} from "../sql/entities/Ad";
 
 @Resolver(Category)
 export class CategoryQueries {

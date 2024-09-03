@@ -1,6 +1,13 @@
-import { Resolver, Query, FieldResolver, Root, Arg } from "type-graphql";
-import Ad from "../sql/entities/Ad";
-import Tag from "../sql/entities/Tag";
+import {
+  Resolver,
+  Query,
+  FieldResolver,
+  Root,
+  Arg,
+  Authorized,
+} from "type-graphql";
+import { Ad } from "../sql/entities/Ad";
+import { Tag } from "../sql/entities/Tag";
 import { In, Like } from "typeorm";
 import DataLoader from "dataloader";
 
@@ -20,6 +27,7 @@ export class AdQueries {
     return tagsDataLoader.loadMany(ad.tagIds);
   }
 
+  @Authorized("ADMIN", "USER")
   @Query(() => [Ad])
   async getAllAds(): Promise<Ad[]> {
     console.log("getAllAds from graphql");
@@ -31,7 +39,7 @@ export class AdQueries {
   async getAdById(@Arg("id") id: string): Promise<Ad> {
     console.log("getAdById from graphql");
     const ad: Ad = await Ad.findOne({
-      where: { id },
+      where: { id: parseInt(id) },
     });
     return ad;
   }

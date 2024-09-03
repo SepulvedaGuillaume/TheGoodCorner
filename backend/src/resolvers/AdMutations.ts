@@ -1,180 +1,97 @@
-import {
-  Resolver,
-  Arg,
-  Mutation,
-  InputType,
-  Field,
-  ID,
-} from "type-graphql";
-import Ad from "../sql/entities/Ad";
-import Category from "../sql/entities/Category";
-import Tag from "../sql/entities/Tag";
-import { DeepPartial, In } from "typeorm";
+import { Arg, Field, InputType, Int, Mutation, Resolver } from "type-graphql";
+import { Ad } from "../sql/entities/Ad";
+import { Tag } from "../sql/entities/Tag";
+import { EntityManager, In } from "typeorm";
+import { Category } from "../sql/entities/Category";
+import { dataSource } from "../sql/dataSource";
 
-@InputType({ description: "New ad data" })
-class AdInput implements Partial<Ad> {
-  @Field((type) => ID, { defaultValue: Math.floor(Math.random() * 1000) })
-  id: string;
+@InputType({ description: 'Provide either category id or name in order to create' })
+export class CategoryInput {
 
-  @Field()
-  title: string;
+    @Field(_ =>  Int, { nullable: true })
+    id?: number;
 
-  @Field({ nullable: true })
-  description?: string;
-
-  @Field()
-  owner: string;
-
-  @Field()
-  price: number;
-
-  @Field({ nullable: true })
-  picture?: string;
-
-  @Field()
-  location: string;
-
-  @Field((type) => Date, { defaultValue: new Date() })
-  createdAt: Date;
-
-  @Field((type) => CategoryInput)
-  category: Category;
-
-  @Field((type) => [TagInput])
-  tags: Tag[];
+    @Field({ nullable: true })
+    name?: string;
 }
 
-@InputType({ description: "Update ad data" })
-class UpdateAdInput implements Partial<Ad> {
-  @Field({ nullable: true })
-  title?: string;
+@InputType()
+export class AdInput {
 
-  @Field({ nullable: true })
-  description?: string;
+    @Field()
+    title!: string;
 
-  @Field({ nullable: true })
-  owner?: string;
+    @Field({ nullable: true })
+    description?: string;
 
-  @Field({ nullable: true })
-  price?: number;
+    @Field({ nullable: true })
+    owner?: string;
 
-  @Field({ nullable: true })
-  picture?: string;
+    @Field(type => Int, { nullable: true })
+    price?: number;
 
-  @Field({ nullable: true })
-  location?: string;
+    @Field({ nullable: true })
+    picture?: string;
 
-  @Field({ nullable: true })
-  createdAt?: Date;
+    @Field({ nullable: true })
+    location?: string;
 
-  @Field((type) => CategoryInput, { nullable: true })
-  category?: Category;
+    @Field(type => Date, { nullable: true })
+    createdAt?: Date;
 
-  @Field((type) => [TagInput], { nullable: true })
-  tags?: Tag[];
-}
+    @Field(type => [String])
+    tags!: string[];
 
-@InputType({ description: "New category data" })
-class CategoryInput implements Partial<Category> {
-  @Field((type) => ID)
-  id: string;
-}
-
-@InputType({ description: "New tag data" })
-class TagInput implements Partial<Tag> {
-  @Field((type) => ID)
-  id: string;
+    @Field()
+    category!: CategoryInput
 }
 
 @Resolver(Ad)
 export class AdMutations {
-  @Mutation(() => Ad)
-  async createAd(@Arg("data") newAd: AdInput): Promise<Ad> {
-    console.log("createAd from graphql");
 
-    const category = await Category.findOne({
-      where: { id: newAd.category.id },
-    });
-    if (!category) {
-      throw new Error(`Category with id ${newAd.category.id} not found`);
+    @Mutation(_ => Ad)
+    async publishAd(@Arg("adData") adData: AdInput): Promise<Ad> {
+        return dataSource.transaction(async (entityManager: EntityManager) => {
+
+            let category: Category | null = null;
+
+            if (adData.category.id) {
+                category = await entityManager.findOneBy(Category, {
+                    id: adData.category.id
+                });
+            }
+
+            if (category == null && adData.category.name) {
+                category = new Category(adData.category.name);
+                await entityManager.save(category);
+            }
+
+            if (category == null) {
+                throw new Error("missing category - params were " + JSON.stringify(adData.category));
+            }
+
+            try {
+                const ad = new Ad(adData.title, adData.description, 
+                    adData.owner, adData.price, adData.picture,
+                    adData.location, adData.createdAt);
+
+                console.log("will save ", ad)
+
+                if (category) {
+                    ad.category = category;
+                }
+
+                await entityManager.save(ad);
+
+                console.log("saved ", ad)
+                return ad;
+
+            } catch (e) {
+                console.error('create ad failed', e);
+                throw new Error("cannot create ad - " + e);
+            }
+
+        })
     }
 
-    const tags = await Tag.find({
-      where: { id: In(newAd.tags.map((tag) => tag.id)) },
-    });
-    if (tags.length !== newAd.tags.length) {
-      throw new Error("One or more tags not found");
-    }
-
-    const ad = Ad.create({
-      ...newAd,
-      category,
-      tags,
-    } as DeepPartial<Ad>);
-
-    await ad.save();
-    return ad;
-  }
-
-  @Mutation(() => Ad)
-  async updateAd(
-    @Arg("id") id: string,
-    @Arg("data") updatedAd: UpdateAdInput
-  ): Promise<Ad> {
-    console.log("updateAd from graphql");
-  
-    const ad = await Ad.findOne({ where: { id } });
-    if (!ad) {
-      throw new Error(`Ad with id ${id} not found`);
-    }
-  
-    if (updatedAd.category) {
-      let category = await Category.findOne({
-        where: { name: updatedAd.category.name },
-      });
-      if (!category) {
-        category = Category.create({ name: updatedAd.category.name });
-        await category.save();
-      }
-      updatedAd.category = category;
-    }
-  
-    if (updatedAd.tags) {
-      const tagNames = updatedAd.tags.map(tag => tag.name);
-      let tags = await Tag.find({ where: { name: In(tagNames) } });
-  
-      // Create any missing tags
-      const existingTagNames = tags.map(tag => tag.name);
-      const newTagNames = tagNames.filter(name => !existingTagNames.includes(name));
-      const newTags = newTagNames.map(name => Tag.create({ name }));
-  
-      await Tag.save(newTags);
-      tags = tags.concat(newTags);
-      
-      updatedAd.tags = tags;
-    }
-  
-    const adUpdated = Ad.create({
-      ...ad,
-      ...updatedAd,
-    });
-  
-    await adUpdated.save();
-    return adUpdated;
-  }
-  
-
-  @Mutation(() => String)
-  async deleteAd(@Arg("id") id: string): Promise<string> {
-    console.log("deleteAd from graphql");
-
-    const ad = await Ad.findOne({ where: { id } });
-
-    if (!ad) {
-      throw new Error(`Ad with id ${id} not found`);
-    }
-
-    await ad.remove();
-    return `Ad with id ${id} deleted`;
-  }
 }

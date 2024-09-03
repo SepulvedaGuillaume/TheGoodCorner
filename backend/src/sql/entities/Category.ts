@@ -1,27 +1,32 @@
-import { Length } from "class-validator";
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany } from "typeorm";
-import Ad from "./Ad";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Ad } from "./Ad";
 import { Field, ID, ObjectType } from "type-graphql";
 
 @ObjectType()
 @Entity()
-class Category extends BaseEntity {
-  @Field((type) => ID)
-  @PrimaryGeneratedColumn()
-  id: string;
+export class Category {
+    static findOne(arg0: { where: { id: string; }; }): Category | PromiseLike<Category> {
+      throw new Error("Method not implemented.");
+    }
+    static find(): Category[] | PromiseLike<Category[]> {
+      throw new Error("Method not implemented.");
+    }
 
-  @Field()
-  @Column({
-    length: 100,
-  })
-  @Length(1, 100, {
-    message: "Entre 1 et 100 caractères",
-  })
-  name: string;
+    @Field(_ => ID)
+    @PrimaryGeneratedColumn()
+    id?: number;
 
-  @Field((type) => [Ad])
-  @OneToMany(() => Ad, (ad) => ad.category)
-  ads: Ad[];
+    @Column()
+    @Field()
+    name: string;
+
+    @OneToMany(() => Ad, ad => ad.category)
+    @Field(type => [Ad])
+    ads?: Promise<Ad[]>
+
+    constructor(
+        name: string = '',
+    ) {
+        this.name = name;
+    }
 }
-
-export default Category;

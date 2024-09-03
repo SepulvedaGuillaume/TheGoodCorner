@@ -1,87 +1,81 @@
-import { Length } from "class-validator";
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  BaseEntity,
-  ManyToOne,
-  ManyToMany,
-  JoinTable,
-  RelationId,
-} from "typeorm";
-import Category from "./Category";
-import Tag from "./Tag";
-import { Field, ID, ObjectType } from "type-graphql";
+import { BaseEntity, BeforeInsert, Column, Entity, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn, RelationId } from "typeorm";
+import { Category } from "./Category";
+import { Tag } from "./Tag";
+import { Field, Float, ID, Int, ObjectType } from "type-graphql";
 
 @ObjectType()
 @Entity()
-class Ad extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  @Field((type) => ID)
-  id: string;
+export class Ad extends BaseEntity {
 
-  @Field()
-  @Column({
-    length: 100,
-  })
-  @Length(1, 100, {
-    message: "Entre 1 et 100 caractères",
-  })
-  title: string;
+    @PrimaryGeneratedColumn()
+    @Field(type => ID)
+    id?: number;
 
-  @Field({ nullable: true })
-  @Column({
-    length: 255,
-    nullable: true,
-  })
-  @Length(1, 255, {
-    message: "Entre 1 et 255 caractères",
-  })
-  description?: string;
+    @Column()
+    @Field()
+    title: string;
 
-  @Field()
-  @Column({
-    length: 100,
-  })
-  @Length(1, 100, {
-    message: "Entre 1 et 100 caractères",
-  })
-  owner: string;
+    @Column({ nullable: true })
+    @Field({ nullable: true })
+    description?: string;
 
-  @Field()
-  @Column()
-  price: number;
+    @Column()
+    @Field()
+    owner: string;
 
-  @Field({ nullable: true })
-  @Column({
-    nullable: true,
-  })
-  picture?: string;
+    @Column({ nullable: true })
+    @Field(type => Int, { nullable: true })
+    price?: number;
 
-  @Field()
-  @Column({
-    length: 100,
-  })
-  @Length(1, 100, {
-    message: "Entre 1 et 100 caractères",
-  })
-  location: string;
+    @Column({ nullable: true })
+    @Field({ nullable: true })
+    picture?: string;
 
-  @Field((type) => Date)
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt?: Date;
+    @Column({ nullable: true })
+    @Field({ nullable: true })
+    location?: string;
 
-  @Field((type) => Category)
-  @ManyToOne(() => Category, (category) => category.ads, { eager: true })
-  category: Category;
+    @Column({ nullable: true })
+    @Field(type => Date)
+    createdAt?: Date;
 
-  @Field((type) => [Tag])
-  @JoinTable()
-  @ManyToMany(() => Tag, (tag) => tag.ads, { onDelete: "CASCADE", eager: true })
-  tags?: Tag[];
+    @ManyToOne(() => Category, category => category.ads, { eager: true })
+    @Field(type => Category)
+    category?: Category;
 
-  @RelationId("tags")
-  tagIds?: number[];
+    @ManyToMany(() => Tag, { cascade: true })
+    @JoinTable()
+    @Field(type => [Tag])
+    tags?: Promise<Tag[]>;
+
+    @RelationId('tags')
+    tagIds?: number[]
+
+    constructor(
+        title: string = '',
+        description: string | undefined = undefined,
+        owner: string = '',
+        price?: number,
+        picture?: string,
+        location?: string,
+        createdAt?: Date,
+    ) {
+        super();
+
+        this.title = title;
+        this.description = description;
+        this.owner = owner;
+        this.price = price;
+        this.picture = picture;
+        this.location = location;
+        this.createdAt = createdAt;
+    }
+
+    @BeforeInsert()
+    onBeforeInsert() {
+        console.log("before insert ad - " + this.title)
+        if (!this.createdAt) {
+            this.createdAt = new Date();
+        }
+    }
 }
-
-export default Ad;

@@ -1,37 +1,22 @@
-import { Length } from "class-validator";
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  BaseEntity,
-  ManyToMany,
-  RelationId
-} from "typeorm";
-import Ad from "./Ad";
-import { Field, ID, Int, ObjectType } from "type-graphql";
+import { Field, ID, ObjectType } from "type-graphql";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @ObjectType()
 @Entity()
-class Tag extends BaseEntity {
-  @Field((type) => ID)
-  @PrimaryGeneratedColumn()
-  id: string;
+export class Tag extends BaseEntity {
 
-  @Field()
-  @Column({
-    length: 100,
-  })
-  @Length(1, 100, {
-    message: "Entre 1 et 100 caractères",
-  })
-  name: string;
+    @Field(type => ID)
+    @PrimaryGeneratedColumn()
+    id?: number;
 
-  @Field((type) => [Ad])
-  @ManyToMany(() => Ad, (ad) => ad.tags, { onDelete: "CASCADE" })
-  ads?: Ad[];
+    @Column()
+    @Field()
+    name: string;
 
-  @RelationId("ads")
-  adIds?: number[];
+    constructor(
+        name: string = '',
+    ) {
+        super();
+        this.name = name;
+    }
 }
-
-export default Tag;
