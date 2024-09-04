@@ -35,6 +35,7 @@ export class AdQueries {
     return ads;
   }
 
+  @Authorized("ADMIN", "USER")
   @Query(() => Ad)
   async getAdById(@Arg("id") id: string): Promise<Ad> {
     console.log("getAdById from graphql");
@@ -44,6 +45,7 @@ export class AdQueries {
     return ad;
   }
 
+  @Authorized("ADMIN", "USER")
   @Query(() => [Ad])
   async searchAds(@Arg("searchTerm") searchTerm: string): Promise<Ad[]> {
     console.log(`searchAds from graphql with searchTerm: ${searchTerm}`);

@@ -1,7 +1,6 @@
-import { Arg, Field, InputType, Int, Mutation, Resolver } from "type-graphql";
+import { Arg, Field, InputType, Int, Mutation, Resolver, Authorized } from "type-graphql";
 import { Ad } from "../sql/entities/Ad";
-import { Tag } from "../sql/entities/Tag";
-import { EntityManager, In } from "typeorm";
+import { EntityManager } from "typeorm";
 import { Category } from "../sql/entities/Category";
 import { dataSource } from "../sql/dataSource";
 
@@ -48,7 +47,7 @@ export class AdInput {
 
 @Resolver(Ad)
 export class AdMutations {
-
+    @Authorized("ADMIN", "USER")
     @Mutation(_ => Ad)
     async publishAd(@Arg("adData") adData: AdInput): Promise<Ad> {
         return dataSource.transaction(async (entityManager: EntityManager) => {

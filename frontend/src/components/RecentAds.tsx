@@ -5,9 +5,13 @@ import Loader from "./Loader";
 import { useQuery } from "@apollo/client";
 import { GET_ALL_ADS_QUERY } from "@/graphql/adsQuery";
 import { GetAllAdsQuery, GetAllAdsQueryVariables } from "@/__generated__/graphql";
+import { useAuth } from "@/contexts/authContext";  // Assurez-vous que ce chemin est correct
 
 export default function RecentAds() {
-  const { loading, error, data } = useQuery<GetAllAdsQuery, GetAllAdsQueryVariables>(GET_ALL_ADS_QUERY);
+  const { isAuthenticated } = useAuth();
+  const { loading, error, data, refetch } = useQuery<GetAllAdsQuery, GetAllAdsQueryVariables>(GET_ALL_ADS_QUERY, {
+    skip: !isAuthenticated,
+  });
   const [ads, setAds] = useState<GetAllAdsQuery["getAllAds"]>([]);
   const [isLoading, setLoading] = useState(false);
 
@@ -20,6 +24,12 @@ export default function RecentAds() {
     }
   }, [data, loading, error]);
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      refetch();
+    }
+  }, [isAuthenticated, refetch]);
+
   const handleUpdateAds = () => {
     if (data) {
       const sortedAds = [...data.getAllAds].sort((a, b) =>
@@ -28,6 +38,10 @@ export default function RecentAds() {
       setAds(sortedAds);
     }
   };
+
+  if (!isAuthenticated) {
+    return <p>Veuillez vous connecter pour voir les annonces.</p>;
+  }
 
   return (
     <div>
